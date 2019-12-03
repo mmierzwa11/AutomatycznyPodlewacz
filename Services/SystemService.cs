@@ -5,7 +5,7 @@ namespace AutomatycznyPodlewacz.Services
 {
     public class SystemService : ISystemService
     {
-        private const double CriticalHumidity = 20.0;
+        private const double CriticalHumidity = 50.0;
         private const double CriticalTemperature = 40.0;
 
         private readonly ISensorService _sensorService;
@@ -34,14 +34,28 @@ namespace AutomatycznyPodlewacz.Services
            {
                while (true)
                {
-                   CurrentTemperature = _sensorService.GetTemperature();
-                   CurrentHumidity = _sensorService.GetHumidity();
+		   var currentTemperature = _sensorService.GetTemperature();
+                   while(!double.IsFinite(currentTemperature)){
+			await Task.Delay(100);
+			currentTemperature = _sensorService.GetTemperature();
+	           }
+	           CurrentTemperature = currentTemperature;
+
+
+			var currentHumidity = _sensorService.GetHumidity();
+			
+			while(!double.IsFinite(currentHumidity)){
+				await Task.Delay(100);
+				currentHumidity = _sensorService.GetHumidity();
+			}
+			CurrentHumidity = currentHumidity;
+			
 
                    if (CurrentHumidity < CriticalHumidity || CurrentTemperature > CriticalTemperature)
                    {
                        await Water();
                    }
-                   await Task.Delay(5000);
+                   await Task.Delay(6000);
                }
            });
         }
